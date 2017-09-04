@@ -6,6 +6,7 @@ module.exports = function(environment) {
     modulePrefix: 'local',
     environment,
     rootURL: '/',
+    // rootURL: '/apps/local/',
     locationType: 'auto',
     EmberENV: {
       FEATURES: {
