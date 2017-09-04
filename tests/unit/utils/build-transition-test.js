@@ -3,17 +3,31 @@ import buildTransition from 'local/utils/build-transition';
 
 import Application from '@ember/application';
 import Route from '@ember/routing/route';
+import { run } from '@ember/runloop';
+import { debug } from '@ember/debug';
 
-// START stub a route
-const MOCKApp = Application.create();
-MOCKApp.IndexRoute = Route.extend({});
-MOCKApp.PageRoute = Route.extend({});
-// END stub a route
-
-module('Unit | Utility | build transition');
+let MOCKApp;
+module('Unit | Utility | build transition', {
+	before() {
+		// START stub a route
+    debug('Creating...');
+		MOCKApp = run(() => {
+			let application = Application.create();
+			application.IndexRoute = Route.extend({});
+			application.PageRoute = Route.extend({});
+			return application;
+		});
+		// END stub a route
+	},
+	after() {
+    debug('Destroying...');
+		run(MOCKApp, 'destroy');
+	},
+});
 
 test('it calls window location function for external links', function(assert) {
-	let link = 'https://example.com/menu.html';
+  debug('1...');  
+  let link = 'https://example.com/menu.html';
 
 	let result = buildTransition(null, link);
 	assert.ok(result.valid);
@@ -24,7 +38,8 @@ test('it calls window location function for external links', function(assert) {
 	);
 });
 test('it calls transitionTo function for internal links/routes', function(assert) {
-	var route = MOCKApp.__container__.lookup('route:index');
+  debug('2...');
+	let route = MOCKApp.__container__.lookup('route:index');
 	let link = 'page'; // this is the route name (not the path name)
 
 	let result = buildTransition(route, link);
@@ -36,11 +51,12 @@ test('it calls transitionTo function for internal links/routes', function(assert
 	);
 });
 test('it calls error function for invalid links/routes', function(assert) {
+  debug('3...');
 	let link = 'invalid.route';
 
 	let result = buildTransition(null, link);
 	assert.ok(!result.valid);
 	assert.ok(!result.run.toString().includes('window.location'));
 	assert.ok(!result.run.toString().includes('transitionTo'));
-	assert.ok(result.run.toString().includes('error'), 'should call error function for invalid links/routes');
+	assert.ok(result.run.toString().includes('Error'), 'should call error function for invalid links/routes');
 });
